@@ -1,6 +1,6 @@
 # NCBA — Local Machine-Identity Telemetry Monitor
 
-**GitHub:** [jagananmol-dev/cyber_39](https://github.com/jagananmol-dev/cyber_39) | **Download:** [NCBA-Cybersecurity-Case-Study.zip](./NCBA-Cybersecurity-Case-Study.zip)
+**GitHub:** [jagananmol-dev/cyber_39](https://github.com/jagananmol-dev/cyber_39)
 
 NCBA (Network-Centric Behavioral Analytics) is a local web application for reviewing machine-identity security telemetry. Establish a reviewed baseline for a workload, import later gateway or sensor events, and examine explainable alerts for events such as token replay, unfamiliar network endpoints, certificate changes, unusual activity hours, and request-rate spikes.
 
