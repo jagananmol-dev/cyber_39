@@ -1,0 +1,17 @@
+{
+  "name": "cyber",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "node --test"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "NCBA machine identity security proof of concept",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
