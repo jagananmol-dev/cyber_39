@@ -6,61 +6,10 @@ const EMPTY_HASH = '0'.repeat(64);
 
 function createInitialState() {
   return {
-    schemaVersion: 1,
-    entities: [
-      {
-        id: 'npe-001',
-        name: 'Public API Gateway',
-        type: 'API Gateway',
-        certificateLifetimeHours: 24,
-        certificateAgeHours: 19.2,
-        agentInstalled: true,
-        behaviorAnomaly: 72,
-        temporalDeviation: 68,
-        peerVariance: 75,
-        threatIntelligence: 60,
-        status: 'active'
-      },
-      {
-        id: 'npe-002',
-        name: 'Partner Portal Edge',
-        type: 'Partner Gateway',
-        certificateLifetimeHours: 12,
-        certificateAgeHours: 4,
-        agentInstalled: false,
-        behaviorAnomaly: 42,
-        temporalDeviation: 38,
-        peerVariance: 35,
-        threatIntelligence: 25,
-        status: 'active'
-      },
-      {
-        id: 'npe-003',
-        name: 'Internal Admin Proxy',
-        type: 'Internal Proxy',
-        certificateLifetimeHours: 6,
-        certificateAgeHours: 2,
-        agentInstalled: true,
-        behaviorAnomaly: 18,
-        temporalDeviation: 16,
-        peerVariance: 14,
-        threatIntelligence: 10,
-        status: 'active'
-      },
-      {
-        id: 'npe-004',
-        name: 'Legacy Payment Gateway',
-        type: 'Legacy Auth Proxy',
-        certificateLifetimeHours: 24,
-        certificateAgeHours: 22,
-        agentInstalled: false,
-        behaviorAnomaly: 96,
-        temporalDeviation: 92,
-        peerVariance: 88,
-        threatIntelligence: 90,
-        status: 'active'
-      }
-    ],
+    schemaVersion: 2,
+    entities: [],
+    baselines: {},
+    telemetry: [],
     audit: []
   };
 }
@@ -122,14 +71,25 @@ class StateStore {
     try {
       const raw = await fs.readFile(this.filePath, 'utf8');
       const state = JSON.parse(raw);
-      if (
-        state.schemaVersion !== 1 ||
+      if (![1, 2].includes(state.schemaVersion) ||
         !Array.isArray(state.entities) ||
-        !Array.isArray(state.audit)
-      ) {
+        !Array.isArray(state.audit)) {
         throw new Error('State file has an unsupported or invalid format.');
       }
+      const version = state.schemaVersion;
+      state.schemaVersion = 2;
+      state.baselines ||= {};
+      state.telemetry ||= [];
+      if (Array.isArray(state.baselines) || typeof state.baselines !== 'object') {
+        throw new Error('State file baselines must be an object.');
+      }
+      if (!Array.isArray(state.telemetry)) {
+        throw new Error('State file telemetry must be an array.');
+      }
       this.state = state;
+      if (version !== 2) {
+        await this.persist(state);
+      }
     } catch (error) {
       if (error.code !== 'ENOENT') {
         throw new Error(`Unable to load NCBA state from ${this.filePath}: ${error.message}`, { cause: error });

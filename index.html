@@ -3,219 +3,106 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="NCBA is a local cybersecurity proof of concept for short-lived workload identities, behavioral risk analysis, and audited response." />
-    <title>NCBA | Machine Identity Security</title>
+    <meta name="description" content="A local-first machine identity telemetry monitor with workload baselines and evidence-based risk recommendations." />
+    <title>NCBA | Local Machine Identity Monitor</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <div class="shell">
       <header class="topbar">
         <div>
-          <p class="eyebrow">Cybersecurity Case Study</p>
-          <h1>NCBA Framework Dashboard</h1>
+          <p class="eyebrow">Local-first cybersecurity workbench</p>
+          <h1>Machine Identity Monitor</h1>
         </div>
-        <div class="topbar-badge">Zero Trust · Machine identity defense</div>
+        <div class="topbar-badge"><span class="status-dot"></span> LOCAL ONLY · NO EXTERNAL ACCOUNTS</div>
       </header>
 
-      <section class="summary-row">
-        <div class="summary-card">
-          <span>Gateways monitored</span>
-          <strong id="kpiEntities">0</strong>
-        </div>
-        <div class="summary-card warn">
-          <span>Elevated risk (60+)</span>
-          <strong id="kpiHighRisk">0</strong>
-        </div>
-        <div class="summary-card danger">
-          <span>Revoked / isolated</span>
-          <strong id="kpiRevoked">0</strong>
-        </div>
-        <div class="summary-card ok">
-          <span>Average risk</span>
-          <strong id="kpiRisk">0</strong>
-        </div>
+      <section class="summary-row" aria-label="Monitoring summary">
+        <div class="summary-card"><span>Workloads baselined</span><strong id="kpiEntities">0</strong></div>
+        <div class="summary-card warn">        <span>High-risk assessments</span><strong id="kpiHighRisk">0</strong></div>
+        <div class="summary-card ok"><span>Telemetry events</span><strong id="kpiEvents">0</strong></div>
+        <div class="summary-card"><span>Sources in latest 50 events</span><strong id="kpiSources">0</strong></div>
       </section>
 
       <section class="overview-panel">
         <div class="overview-copy">
-          <p class="eyebrow-small">Problem solved</p>
-          <h2>NCBA closes the gap between certificate lifecycle automation and real behavioral detection.</h2>
-          <p>
-            Machine identities such as APIs, microservices, containers, and IoT devices are now a critical attack surface.
-            NCBA demonstrates short-lived credentials, behavior-based risk scoring, tiered response, and a verifiable local audit trail. Infrastructure integrations are simulated; no certificate authority, packet sensor, or blockchain is connected.
-          </p>
+          <p class="eyebrow-small">The problem this solves</p>
+          <h2>Spot stolen workload credentials by comparing observed traffic with each service's normal behavior.</h2>
+          <p>Capture a known-good baseline, import identity-aware gateway or sensor events, investigate the evidence, and review a prioritized response. Everything is stored on this computer. No sign-in, cloud account, or third-party API is required.</p>
         </div>
-
         <div class="feature-grid">
-          <div class="feature-box">
-            <span>Short-lived certs</span>
-            <strong>1–24h</strong>
-          </div>
-          <div class="feature-box">
-            <span>Behavior analytics</span>
-            <strong>Zero trust</strong>
-          </div>
-          <div class="feature-box">
-            <span>Audit trail</span>
-            <strong>Hash-chained</strong>
-          </div>
+          <div class="feature-box"><span>Data source</span><strong>Your telemetry</strong></div>
+          <div class="feature-box"><span>Analysis</span><strong>Explainable rules</strong></div>
+          <div class="feature-box"><span>Response</span><strong>Operator-reviewed</strong></div>
         </div>
       </section>
 
       <main class="grid">
         <section class="panel left-panel">
-          <div class="panel-header">
-            <h2>Machine Identity Monitor</h2>
-            <button id="addEntityBtn" class="secondary-btn">+ New Entity</button>
-          </div>
-
+          <div class="panel-header"><h2>Workload inventory</h2></div>
+          <p class="form-note">A workload appears here after you capture its baseline.</p>
           <div id="entityList" class="entity-list"></div>
+          <div id="emptyInventory" class="empty-state">No workloads baselined yet. Import at least five known-good events per workload to get started.</div>
         </section>
 
         <section class="panel center-panel">
-          <div class="panel-header">
-            <h2>Live Analysis</h2>
-            <button id="runAnalysisBtn" class="primary-btn">Analyze</button>
+          <div class="panel-header"><h2>Telemetry intake</h2></div>
+          <label class="import-label" for="telemetryFile">Import a local JSON telemetry file</label>
+          <input id="telemetryFile" type="file" accept=".json,application/json" />
+          <label for="importMode">What does this data represent?</label>
+          <select id="importMode">
+            <option value="monitor">New observations — compare with the saved baseline</option>
+            <option value="baseline">Verified normal traffic — capture or replace baseline</option>
+          </select>
+          <div class="intake-actions">
+            <button id="importBtn" class="primary-btn">Import and analyse</button>
+            <button id="sampleBtn" class="secondary-btn">Run local incident drill</button>
+          </div>
+          <p class="form-note">Supported JSON: <code>{"events":[...]}</code>. Each event uses <code>workload</code>, ISO 8601 <code>timestamp</code>, <code>eventType</code>, and optional source IP, destination, TLS fingerprint, and request rate. Maximum 1,000 events / 1 MB per import.</p>
+          <div id="downloadExamples" class="download-examples"></div>
+          <div id="intakeMessage" class="intake-message" role="status" aria-live="polite">Select an event export or run the clearly labelled training drill.</div>
+
+          <div class="event-reference">
+            <h3>Recognized event types</h3>
+            <p><code>connection</code> · <code>authentication_failure</code> · <code>token_replay</code> · <code>certificate_expired</code> · <code>certificate_mismatch</code> · <code>rate_anomaly</code> · <code>unexpected_egress</code> · <code>threat_intelligence_match</code></p>
           </div>
 
-          <form id="analysisForm" class="analysis-form">
-            <label>
-              Gateway Name
-              <input id="entityName" type="text" value="Public API Gateway" />
-            </label>
-
-            <label>
-              Gateway Type
-              <select id="entityType">
-                <option>API Gateway</option>
-                <option>Partner Gateway</option>
-                <option>Internal Proxy</option>
-                <option>Legacy Auth Proxy</option>
-                <option>Webhook Entry Point</option>
-              </select>
-            </label>
-
-            <div class="two-col">
-              <label>
-                Certificate lifetime (hours)
-                <input id="certificateLifetime" type="number" value="24" min="1" max="24" required />
-              </label>
-
-              <label>
-                Certificate age (hours)
-                <input id="certificateAge" type="number" value="19.2" min="0" max="24" step="0.1" required />
-              </label>
-            </div>
-
-            <label>
-                Runtime protection agent
-                <select id="agentInstalled">
-                  <option value="true">Enabled</option>
-                  <option value="false">Not active</option>
-                </select>
-            </label>
-
-            <div class="two-col">
-              <label>
-                Behavior anomaly (40%)
-                <input id="behaviorAnomaly" type="range" min="0" max="100" value="72" />
-                <span id="behaviorAnomalyValue" class="mini-value">72</span>
-              </label>
-
-              <label>
-                Temporal deviation (30%)
-                <input id="temporalDeviation" type="range" min="0" max="100" value="68" />
-                <span id="temporalDeviationValue" class="mini-value">68</span>
-              </label>
-            </div>
-
-            <div class="two-col">
-              <label>
-                Peer-group variance (20%)
-                <input id="peerVariance" type="range" min="0" max="100" value="75" />
-                <span id="peerVarianceValue" class="mini-value">75</span>
-              </label>
-
-              <label>
-                Threat intelligence (10%)
-                <input id="threatIntelligence" type="range" min="0" max="100" value="60" />
-                <span id="threatIntelligenceValue" class="mini-value">60</span>
-              </label>
-            </div>
-            <p class="form-note">Renewal is due at 80% of the configured lifetime. Workloads without an endpoint agent remain monitorable through network telemetry in the proposed architecture.</p>
-          </form>
+          <div class="safety-note">
+            <strong>Baseline carefully.</strong> Only mark data as a baseline after verifying it represents legitimate traffic. A bad baseline can hide attacks or produce false alerts.
+          </div>
         </section>
 
         <aside class="panel right-panel">
-          <div class="panel-header">
-            <h2>Risk Verdict</h2>
-          </div>
-
+          <div class="panel-header"><h2>Detection assessment</h2></div>
+          <div class="selected-workload" id="selectedWorkload">No workload selected</div>
           <div class="score-wrap">
-            <div class="score-ring" id="riskRing">
-              <div class="score-ring-inner">
-                <strong id="riskScore">78</strong>
-                <span>Risk</span>
-              </div>
-            </div>
+            <div class="score-ring" id="riskRing"><div class="score-ring-inner"><strong id="riskScore">—</strong><span>Risk</span></div></div>
           </div>
-
           <div class="chart-box">
-            <div class="chart-header">
-              <span>Threat Pattern</span>
-              <span id="certificateStatus">Checking certificate…</span>
-            </div>
-            <svg id="riskChart" viewBox="0 0 260 120" preserveAspectRatio="none"></svg>
+            <div class="chart-header"><span>Evidence-based factors</span><span id="confidenceLabel">Waiting for data</span></div>
+            <svg id="riskChart" viewBox="0 0 260 120" preserveAspectRatio="none" role="img" aria-label="Risk factor chart"></svg>
           </div>
-
-          <div class="verdict-box" id="verdictBox">
-            <h3>Loading analysis…</h3>
-            <p>The risk assessment will appear after workload data is loaded.</p>
-          </div>
-
-          <p class="entity-state" id="entityStatus" aria-live="polite"></p>
-          <div class="approval-fields">
-            <label>Approver 1 <input id="approverOne" type="text" maxlength="60" placeholder="e.g. analyst-a" /></label>
-            <label>Approver 2 <input id="approverTwo" type="text" maxlength="60" placeholder="e.g. analyst-b" /></label>
-            <p class="form-note">Revoke, isolate, and restore actions require two distinct demo approver names. This is not production authentication.</p>
-          </div>
-          <div class="action-row">
-            <button id="revokeBtn" class="danger-btn">Revoke Client</button>
-            <button id="quarantineBtn" class="secondary-btn">Isolate Route</button>
-            <button id="restoreBtn" class="secondary-btn">Restore Access</button>
-            <button id="renewBtn" class="secondary-btn">Renew Certificate</button>
-          </div>
-
-          <h3 class="alert-heading">Recent detections</h3>
+          <div class="verdict-box" id="verdictBox"><h3>Ready for telemetry</h3><p>Import real events or run the local incident drill. An assessment requires a saved, known-good baseline.</p></div>
           <ul class="insights-list" id="insightsList"></ul>
-          <div id="alertFeed" class="alert-feed"></div>
+          <div class="evidence-box" id="evidenceBox"></div>
+          <div class="safety-note"><strong>Recommendations only.</strong> This standalone local app does not revoke certificates, quarantine workloads, block packets, or authenticate approvers. Review evidence and enforce approved actions in your actual security controls.</div>
         </aside>
       </main>
 
       <section class="bottom-grid">
         <div class="panel mini-panel">
-          <div class="panel-header">
-            <h2>Response automation</h2>
-          </div>
-          <div class="flow-list">
-            <div><span>01</span><p>Collect TLS and gateway telemetry</p></div>
-            <div><span>02</span><p>Correlate with machine behavior baselines</p></div>
-            <div><span>03</span><p>Raise risk score and inspect lateral movement</p></div>
-            <div><span>04</span><p>Revoke certificate and isolate route</p></div>
-          </div>
+          <div class="panel-header"><h2>Recent telemetry</h2><span class="audit-status" id="eventCount">0 events</span></div>
+          <div id="telemetryFeed" class="threat-feed"></div>
         </div>
-
         <div class="panel mini-panel">
-          <div class="panel-header">
-            <h2>Audit trail <span id="auditStatus" class="audit-status">Checking…</span></h2>
-          </div>
-          <p class="form-note">Events are stored locally and linked with SHA-256 hashes. This makes edits detectable; it is not an immutable blockchain ledger.</p>
-          <div id="liveThreatFeed" class="threat-feed"></div>
+          <div class="panel-header"><h2>Local audit trail <span class="audit-status" id="auditStatus">Checking…</span></h2></div>
+          <p class="form-note">Local SHA-256 hash-linked audit events help reveal accidental or unsophisticated edits. They are not immutable storage and cannot prevent an administrator from altering this computer's files.</p>
+          <div id="auditFeed" class="threat-feed"></div>
+          <button id="clearDataBtn" class="danger-btn clear-data-btn">Clear local telemetry and baselines</button>
         </div>
       </section>
-      <footer class="page-footer">NCBA Cybersecurity Case Study · Local demonstration only · <a href="https://github.com/jagananmol-dev/cyber_39">GitHub source repository</a></footer>
+      <footer class="page-footer">Bound to this computer · Sample drill data is labelled synthetic · No production response actions</footer>
     </div>
-
     <script src="script.js"></script>
   </body>
 </html>
